@@ -153,18 +153,6 @@ public class GameScreen implements Screen {
 
 
 
-            plataforma1 = new Plataforma();
-            plataforma1.setX(0);
-            plataforma1.setY(0);
-            plataforma1.setWidth(6800);
-            plataforma1.setHeight(40);
-            plataforma1.bounds.set(plataforma1.getX(), plataforma1.getY(), plataforma1.getWidth(), plataforma1.getHeight());
-            plataforma1.setGameScreen(this);
-            plataforma1.setUpsideDown(false);
-            plataforma1.setManager(game.manager);
-            plataformas.add(plataforma1);
-            stage.addActor(plataforma1);
-
 
 
         for (int i = 0; i < 11; i++) {
@@ -279,11 +267,9 @@ public class GameScreen implements Screen {
             game.manager.get("fail.wav", Sound.class).play();
         }
 
-        if (player.getX() == 6750){
-            victoria = true;
-        }
 
-        // Comprova si cal generar un obstacle nou
+
+        // GENERA TODOS LOS ACTORES DE LA PARTIDA
         if (numPlat > 0){
             spawnObstacle();
         }
@@ -293,26 +279,78 @@ public class GameScreen implements Screen {
         if (numMonedas > 0){
             spawnMonedas();
         }
-
         if (TimeUtils.nanoTime() - lastObstacleTime > 2100000000){
             spawnNubes();
         }
 
 
-
-
-
         // Comprova si les tuberies colisionen amb el jugador
+
+
+        // COLISIONES CON LAS PLATAFORMAS
+        boolean colision = false;
         Iterator<Pipe> iter = obstacles.iterator();
         while (iter.hasNext()) {
             Pipe pipe = iter.next();
             if (player.speedy < 0){
                 if (pipe.getBounds().overlaps(player.getBounds())) {
-                    player.setY(pipe.getY() + 90);
+                    player.setY(pipe.getY() + 150);
                     player.colisionando = true;
-                    //dead = true;
-                } else {
+                    colision = true;
+                }
+            }
+        }
+
+        Iterator<Plataforma> plat = plataformas.iterator();
+        while (plat.hasNext()) {
+            Plataforma plataforma = plat.next();
+            if (player.speedy < 0){
+                if (plataforma.getBounds().overlaps(player.getBounds())) {
+                    player.setY(plataforma.getY() + 33);
+                    player.colisionando = true;
+                    colision = true;
+                }
+            }
+        }
+        if (!colision){
+            player.colisionando = false;
+        }
+
+        // COLISIONES CON LAS MONEDAS
+        Iterator<Moneda> monedaIT = monedas.iterator();
+        while (monedaIT.hasNext()) {
+            Moneda moneda = monedaIT.next();
+            if (moneda.getBounds().overlaps(player.getBounds())) {
+                moneda.remove();
+                monedasCogidas++;
+            }
+        }
+
+        // SI COLISIONA CON LA BANDERA GANA
+        if (banderaVictoria.getBounds().overlaps(player.getBounds())) {
+            victoria = true;
+        }
+
+        // COLISIONES CON EL GOOMBA
+        Iterator<EnemigoGoomba> goomba = goombas.iterator();
+        while (goomba.hasNext()) {
+            EnemigoGoomba enemigoGoomba = goomba.next();
+            if (player.speedy < 0 && player.colisionando == false){
+                if (enemigoGoomba.getBounds().overlaps(player.getBounds()) && player.getY() > enemigoGoomba.getY()) {
+                    enemigoGoomba.remove();
+                    goombas.removeValue(enemigoGoomba,true);
+                    player.impulso();
+                    player.colisionando = true;
+                }else {
                     player.colisionando = false;
+                }
+            }
+
+            if (player.colisionando == true) {
+                if (enemigoGoomba.getBounds().overlaps(player.getBounds()) && player.getY() < enemigoGoomba.getY()) {
+                    enemigoGoomba.remove();
+                    goombas.removeValue(enemigoGoomba, true);
+                    vidas--;
                 }
             }
 
@@ -326,62 +364,6 @@ public class GameScreen implements Screen {
                 obstacles.removeValue(pipe, true);
             }
         }*/
-
-        Iterator<Plataforma> plat = plataformas.iterator();
-        while (plat.hasNext()) {
-            Plataforma plataforma = plat.next();
-            if (player.speedy < 0){
-                if (plataforma.getBounds().overlaps(player.getBounds())) {
-                    player.setY(plataforma.getY() + 30);
-                    player.colisionando = true;
-                    //dead = true;
-                }else {
-                    player.colisionando = false;
-                }
-            }
-        }
-
-        Iterator<Moneda> monedaIT = monedas.iterator();
-        while (monedaIT.hasNext()) {
-            Moneda moneda = monedaIT.next();
-                if (moneda.getBounds().overlaps(player.getBounds())) {
-                    moneda.remove();
-                    monedasCogidas++;
-                }
-        }
-
-
-        if (banderaVictoria.getBounds().overlaps(player.getBounds())) {
-            victoria = true;
-        }
-
-
-        Iterator<EnemigoGoomba> goomba = goombas.iterator();
-        while (goomba.hasNext()) {
-            EnemigoGoomba enemigoGoomba = goomba.next();
-            if (player.speedy < 0 && player.colisionando == false){
-                if (enemigoGoomba.getBounds().overlaps(player.getBounds()) && player.getY() > enemigoGoomba.getY()) {
-                    //dead = true;
-                    //goombas.removeValue(enemigoGoomba,true);
-                    enemigoGoomba.remove();
-                    player.impulso();
-                    player.colisionando = true;
-                }else {
-                    player.colisionando = false;
-                }
-            }
-
-            if (player.speedy != 0 && player.colisionando != false) {
-                if (enemigoGoomba.getBounds().overlaps(player.getBounds()) && player.getY() < enemigoGoomba.getY()) {
-                    //dead = true;
-                    //goombas.removeValue(enemigoGoomba, true);
-                    enemigoGoomba.remove();
-                    vidas--;
-                    //player.colisionando = true;
-                }
-            }
-
-        }
 
         // Treure de l'array les tuberies que estan fora de pantalla
         /*plat = plataformas.iterator();
@@ -414,8 +396,6 @@ public class GameScreen implements Screen {
 
         //La puntuació augmenta amb el temps de joc
         score += Gdx.graphics.getDeltaTime();
-
-
 
 
     }
@@ -452,25 +432,14 @@ public class GameScreen implements Screen {
         pipe1.setX(randomNumber);
         pipe1.setY(30);
         pipe1.setWidth(40);
-        pipe1.setHeight(60);
+        pipe1.setHeight(150);
         pipe1.setUpsideDown(true);
         pipe1.setManager(game.manager);
         pipe1.setGameScreen(this);
         obstacles.add(pipe1);
         stage.addActor(pipe1);
 
-        /*Pipe pipe2 = new Pipe();
-        pipe2.setX(800);
-        pipe2.setY(holey + 200);
-        pipe2.setUpsideDown(false);
-        pipe2.setManager(game.manager);
-        obstacles.add(pipe2);
-        stage.addActor(pipe2);*/
-
-
         numPlat--;
-
-
         lastObstacleTime = TimeUtils.nanoTime();
     }
 

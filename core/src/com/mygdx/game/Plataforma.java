@@ -24,7 +24,6 @@ public class Plataforma extends Actor {
 
     @Override
     public void act(float delta) {
-        //moveBy(0, 0);
         //moveBy(-200 * delta, 0);
         bounds.set(getX(), getY(), getWidth(), getHeight());
         if(!isVisible())
