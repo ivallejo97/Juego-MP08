@@ -16,6 +16,10 @@ public class Bird extends Game {
 	AssetManager manager;
 	int topScore;
 	int lastScore;
+	int monedasCogidas;
+	int numGoombas;
+	int numGoombasMuertos;
+
 
 	public void create() {
 		batch = new SpriteBatch();
@@ -43,6 +47,7 @@ public class Bird extends Game {
 		manager.load("fondo_menu.jpg", Texture.class);
 		manager.load("plataforma.png", Texture.class);
 		manager.load("goomba.png", Texture.class);
+		manager.load("goomba_gigante.png", Texture.class);
 		manager.load("victoria.png", Texture.class);
 		manager.load("bandera_victoria.png", Texture.class);
 		manager.load("nube.png", Texture.class);
@@ -50,8 +55,21 @@ public class Bird extends Game {
 		manager.load("montaña.png", Texture.class);
 		manager.load("tuberia.png", Texture.class);
 		manager.load("moneda.png", Texture.class);
+		manager.load("mario1.png", Texture.class);
+		manager.load("mario2.png", Texture.class);
+		manager.load("mario3.png", Texture.class);
+		manager.load("game_over.png", Texture.class);
+		manager.load("bloques.png", Texture.class);
+		manager.load("bloque_individual.png", Texture.class);
+		manager.load("fondo_bowser.jpg", Texture.class);
+		manager.load("bowser.png", Texture.class);
 		topScore = 0;
 		lastScore = 0;
+		monedasCogidas = 0;
+		numGoombas = 0;
+		numGoombasMuertos = 0;
+
+
 
 
 
@@ -59,6 +77,9 @@ public class Bird extends Game {
 		manager.load("fail.wav", Sound.class);
 		manager.load("musica_fondo.mp3", Sound.class);
 		manager.load("salto.mp3", Sound.class);
+		manager.load("moneda.mp3", Sound.class);
+		manager.load("game_over.mp3", Sound.class);
+		manager.load("dead_goomba.mp3", Sound.class);
 
 
 		manager.finishLoading();

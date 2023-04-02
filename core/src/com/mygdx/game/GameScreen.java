@@ -2,13 +2,11 @@ package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
@@ -20,7 +18,6 @@ import com.badlogic.gdx.utils.TimeUtils;
 
 import java.util.Iterator;
 import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class GameScreen implements Screen {
     final Bird game;
@@ -44,24 +41,30 @@ public class GameScreen implements Screen {
     private Button rightButton;
     private Button upButton;
 
-    Array<Pipe> obstacles;
+    Array<Pipe> tuberias;
     Array<Plataforma> plataformas;
     Array<EnemigoGoomba> goombas;
+    Array<GoombaGigante> goombaGigantes;
     Array<Nube> nubes;
     Array<Moneda> monedas;
+    Array<Bloque> bloques;
+    GoombaGigante goombaGigante;
     long lastObstacleTime;
     public float scroll;
-    Plataforma plataforma1;
 
     Random rand = new Random();
-    int min = 4;
-    int max = 8;
+    int min = 8;
+    int max = 12;
     int randomGoombas = rand.nextInt(max - min + 1) + min;
 
-    int numPlat = 3;
+    int numTuberias = 4;
     int numGoombas = randomGoombas;
-    int numMonedas = 15;
+    int numMonedas = 12;
+    int numGoombaGigante = 1;
+    int vidasGoombaGigante = 3;
     int monedasCogidas = 0;
+    int numGoombasMuertos = 0;
+
 
 
     public GameScreen(final Bird gam) {
@@ -79,12 +82,10 @@ public class GameScreen implements Screen {
         banderaVictoria.setGameScreen(this);
         banderaVictoria.setManager(game.manager);
 
-
         stage = new Stage();
         stage.getViewport().setCamera(camera);
         stage.addActor(player);
         stage.addActor(banderaVictoria);
-
 
         dead = false;
         score = 0;
@@ -92,11 +93,13 @@ public class GameScreen implements Screen {
         scroll = 0;
 
         // create the obstacles array and spawn the first obstacle
-        obstacles = new Array<Pipe>();
+        tuberias = new Array<Pipe>();
         plataformas = new Array<Plataforma>();
         goombas = new Array<EnemigoGoomba>();
+        goombaGigantes = new Array<GoombaGigante>();
         nubes = new Array<Nube>();
         monedas = new Array<Moneda>();
+        bloques = new Array<Bloque>();
 
         // Carga las imágenes de los botones en la memoria
         leftButtonTexture = new Texture(Gdx.files.internal("boton_izquierda.png"));
@@ -152,10 +155,7 @@ public class GameScreen implements Screen {
         });
 
 
-
-
-
-        for (int i = 0; i < 11; i++) {
+        for (int i = 0; i < 12; i++) {
             Plataforma plataforma = new Plataforma();
             plataforma.setX(i * 600); // establece la posición en el eje x
             plataforma.setY(0); // establece la posición en el eje y
@@ -169,6 +169,65 @@ public class GameScreen implements Screen {
             stage.addActor(plataforma); // agrega la plataforma a la escena
         }
 
+        int posXBloques = 1;
+        for (int i = 0; i < 3; i++) {
+            Random rand = new Random();
+            int min = 120;
+            int max = 170;
+            int randomY = rand.nextInt(max - min + 1) + min;
+            Bloque bloque = new Bloque();
+            bloque.setX(posXBloques * 1600);
+            bloque.setY(randomY);
+            bloque.setWidth(210);
+            bloque.setHeight(40);
+            bloque.setBounds(bloque.getX(), bloque.getY(), bloque.getWidth(), bloque.getHeight());
+            bloque.setGameScreen(this);
+            bloque.setUpsideDown(true);
+            bloque.setManager(game.manager);
+            bloques.add(bloque);
+            stage.addActor(bloque);
+            posXBloques++;
+        }
+
+        int posXBloquesIndividuales = 1;
+        for (int i = 0; i < 3; i++) {
+            Random rand = new Random();
+            int min = 280;
+            int max = 310;
+            int randomY = rand.nextInt(max - min + 1) + min;
+            Bloque bloque = new Bloque();
+            bloque.setX(posXBloquesIndividuales * 1650);
+            bloque.setY(randomY);
+            bloque.setWidth(40);
+            bloque.setHeight(40);
+            bloque.setBounds(bloque.getX(), bloque.getY(), bloque.getWidth(), bloque.getHeight());
+            bloque.setGameScreen(this);
+            bloque.setManager(game.manager);
+            bloques.add(bloque);
+            stage.addActor(bloque);
+
+            Moneda moneda = new Moneda();
+            moneda.setX(bloque.getX() + 5);
+            moneda.setY(bloque.getY() + 50);
+            moneda.setGameScreen(this);
+            moneda.setManager(game.manager);
+            monedas.add(moneda);
+            stage.addActor(moneda);
+
+            posXBloquesIndividuales++;
+        }
+
+        // Crear el Goomba Gigante
+        goombaGigante = new GoombaGigante(6000,5700);
+        goombaGigante.setManager(game.manager);
+        goombaGigante.setGameScreen(this);
+        goombaGigante.setWidth(100);
+        goombaGigante.setHeight(100);
+        goombaGigantes.add(goombaGigante);
+        stage.addActor(goombaGigante);
+        numGoombaGigante--;
+
+        game.numGoombas = numGoombas;
 
     }
 
@@ -189,12 +248,16 @@ public class GameScreen implements Screen {
         game.batch.draw(game.manager.get("arbusto.png", Texture.class), 240 - scroll, 30);
         game.batch.draw(game.manager.get("arbusto.png", Texture.class), 1500 - scroll, 30);
         game.batch.draw(game.manager.get("arbusto.png", Texture.class), 3400 - scroll, 30);
+        game.batch.draw(game.manager.get("arbusto.png", Texture.class), 3900 - scroll, 30);
+        game.batch.draw(game.manager.get("arbusto.png", Texture.class), 6100 - scroll, 30);
         game.batch.draw(game.manager.get("montaña.png", Texture.class), 1000 - scroll, 30);
         game.batch.draw(game.manager.get("montaña.png", Texture.class), 1200 - scroll, 30);
         game.batch.draw(game.manager.get("montaña.png", Texture.class), 2000 - scroll, 30);
         game.batch.draw(game.manager.get("montaña.png", Texture.class), 2200 - scroll, 30);
         game.batch.draw(game.manager.get("montaña.png", Texture.class), 3000 - scroll, 30);
+        game.batch.draw(game.manager.get("montaña.png", Texture.class), 4200 - scroll, 30);
         game.batch.draw(game.manager.get("montaña.png", Texture.class), 5000 - scroll, 30);
+        game.batch.draw(game.manager.get("montaña.png", Texture.class), 6400 - scroll, 30);
         game.batch.end();
 
         // Stage batch: Actors
@@ -210,12 +273,9 @@ public class GameScreen implements Screen {
         }
         if (upButton.isPressed()){
             player.impulso();
-            //game.manager.get("salto.mp3", Sound.class).play();
         }
 
-
         stage.act(delta);
-
 
         // Comprova que el jugador no es surt de la pantalla.
         // Si surt per la part inferior, game over
@@ -232,32 +292,29 @@ public class GameScreen implements Screen {
             player.setX(5);
         }
 
-
         // Actualizacion de Scroll
-        if(player.getX() > scroll+400)
-        {
+        if(player.getX() > scroll+400) {
             scroll = player.getX() - 400;
         }
 
 
 
-
-
         // Comprobar muerte
         if(dead) {
-            //game.setScreen(new GameOverScreen(game));
-            //dispose();
+            game.setScreen(new GameOverScreen(game));
+            dispose();
 
             game.lastScore = (int)score;
             if(game.lastScore > game.topScore)
                 game.topScore = game.lastScore;
 
-            game.manager.get("fail.wav", Sound.class).play();
+            game.manager.get("game_over.mp3", Sound.class).play();
         }
 
         // Comprobar si se ha pasado el nivel
         if(victoria) {
-            game.setScreen(new WinsScreen(game));
+
+            game.setScreen(new MarioVSBowser(game));
             dispose();
 
             game.lastScore = (int)score;
@@ -270,7 +327,7 @@ public class GameScreen implements Screen {
 
 
         // GENERA TODOS LOS ACTORES DE LA PARTIDA
-        if (numPlat > 0){
+        if (numTuberias > 0){
             spawnObstacle();
         }
         if (numGoombas > 0){
@@ -284,12 +341,9 @@ public class GameScreen implements Screen {
         }
 
 
-        // Comprova si les tuberies colisionen amb el jugador
-
-
         // COLISIONES CON LAS PLATAFORMAS
         boolean colision = false;
-        Iterator<Pipe> iter = obstacles.iterator();
+        Iterator<Pipe> iter = tuberias.iterator();
         while (iter.hasNext()) {
             Pipe pipe = iter.next();
             if (player.speedy < 0){
@@ -297,6 +351,9 @@ public class GameScreen implements Screen {
                     player.setY(pipe.getY() + 150);
                     player.colisionando = true;
                     colision = true;
+                }
+                if (pipe.getBounds().overlaps(player.getBounds()) && player.getX() < pipe.getX() && player.getY() < pipe.getY()){
+                    player.setX(pipe.getX() - 40);
                 }
             }
         }
@@ -312,17 +369,34 @@ public class GameScreen implements Screen {
                 }
             }
         }
+
+        Iterator<Bloque> bloqueI = bloques.iterator();
+        while (bloqueI.hasNext()) {
+            Bloque bloque = bloqueI.next();
+            if (player.speedy < 0){
+                if (bloque.getBounds().overlaps(player.getBounds())) {
+                    player.setY(bloque.getY() + 35);
+                    player.colisionando = true;
+                    colision = true;
+                }
+            }
+        }
+
         if (!colision){
             player.colisionando = false;
         }
+
 
         // COLISIONES CON LAS MONEDAS
         Iterator<Moneda> monedaIT = monedas.iterator();
         while (monedaIT.hasNext()) {
             Moneda moneda = monedaIT.next();
             if (moneda.getBounds().overlaps(player.getBounds())) {
+                monedas.removeValue(moneda,true);
                 moneda.remove();
                 monedasCogidas++;
+                game.monedasCogidas = monedasCogidas;
+                game.manager.get("moneda.mp3", Sound.class).play();
             }
         }
 
@@ -337,44 +411,66 @@ public class GameScreen implements Screen {
             EnemigoGoomba enemigoGoomba = goomba.next();
             if (player.speedy < 0 && player.colisionando == false){
                 if (enemigoGoomba.getBounds().overlaps(player.getBounds()) && player.getY() > enemigoGoomba.getY()) {
+                    game.manager.get("dead_goomba.mp3", Sound.class).play();
                     enemigoGoomba.remove();
                     goombas.removeValue(enemigoGoomba,true);
-                    player.impulso();
                     player.colisionando = true;
-                }else {
-                    player.colisionando = false;
+                    player.impulso();
+                    numGoombasMuertos++;
+                    game.numGoombasMuertos = numGoombasMuertos;
                 }
             }
 
             if (player.colisionando == true) {
-                if (enemigoGoomba.getBounds().overlaps(player.getBounds()) && player.getY() < enemigoGoomba.getY()) {
+                if (enemigoGoomba.getBounds().overlaps(player.getBounds())) {
+                    game.manager.get("dead_goomba.mp3", Sound.class).play();
                     enemigoGoomba.remove();
                     goombas.removeValue(enemigoGoomba, true);
                     vidas--;
                 }
             }
-
         }
 
-        // Treure de l'array les tuberies que estan fora de pantalla
-        /*iter = obstacles.iterator();
-        while (iter.hasNext()) {
-            Pipe pipe = iter.next();
-            if (pipe.getX() < -64) {
-                obstacles.removeValue(pipe, true);
+        //Colisiones con el goomba gigante
+        Iterator<GoombaGigante> goombaGig = goombaGigantes.iterator();
+        while (goombaGig.hasNext()) {
+            GoombaGigante goombaGigante = goombaGig.next();
+            if (player.speedy < 0 && player.colisionando == false){
+                if (goombaGigante.getBounds().overlaps(player.getBounds()) && player.getY() > goombaGigante.getY()) {
+                    player.colisionando = true;
+                    player.impulso();
+                    vidasGoombaGigante--;
+                }
+
             }
-        }*/
 
-        // Treure de l'array les tuberies que estan fora de pantalla
-        /*plat = plataformas.iterator();
-        while (plat.hasNext()) {
-            Plataforma plataforma = plat.next();
-            if (plataforma.getX() < scroll) {
-                plataformas.removeValue(plataforma1, true);
+            if (player.colisionando == true) {
+                if (goombaGigante.getBounds().overlaps(player.getBounds())) {
+                    vidasGoombaGigante--;
+                    goombaGigante.remove();
+                    goombaGigantes.removeValue(goombaGigante, true);
+                    vidas-=2;
+                }
             }
-        }*/
 
+            /*if (vidasGoombaGigante == 2){
+                goombaGigante.speed = 1.2f;
+                goombaGigante.setX(goombaGigante.getX());
+            }
+            if (vidasGoombaGigante == 1){
+                goombaGigante.speed = 1.5f;
+                goombaGigante.setX(goombaGigante.getX());
+            }*/
 
+            if (vidasGoombaGigante == 0){
+                goombaGigante.remove();
+                goombaGigantes.removeValue(goombaGigante, true);
+            }
+        }
+
+        if (vidas == 0){
+            dead = true;
+        }
 
 
 
@@ -420,26 +516,25 @@ public class GameScreen implements Screen {
     public void dispose() {
     }
 
+    int posX = 1;
+
     private void spawnObstacle() {
         // Calcula la alçada de l'obstacle aleatòriament
         float holey = MathUtils.random(50, 180);
         // Crea dos obstacles: Una tubería superior i una inferior
-        Random rand = new Random();
-        int min = 500;
-        int max = 6000;
-        int randomNumber = rand.nextInt(max - min + 1) + min;
         Pipe pipe1 = new Pipe();
-        pipe1.setX(randomNumber);
+        pipe1.setX(1350 * posX);
         pipe1.setY(30);
         pipe1.setWidth(40);
         pipe1.setHeight(150);
         pipe1.setUpsideDown(true);
         pipe1.setManager(game.manager);
         pipe1.setGameScreen(this);
-        obstacles.add(pipe1);
+        tuberias.add(pipe1);
         stage.addActor(pipe1);
 
-        numPlat--;
+        numTuberias--;
+        posX++;
         lastObstacleTime = TimeUtils.nanoTime();
     }
 
@@ -463,6 +558,7 @@ public class GameScreen implements Screen {
         lastObstacleTime = TimeUtils.nanoTime();
 
     }
+
 
     private void spawnNubes(){
         Random rand = new Random();
@@ -500,7 +596,7 @@ public class GameScreen implements Screen {
         stage.addActor(moneda);
 
         numMonedas--;
-
     }
+
 
 }

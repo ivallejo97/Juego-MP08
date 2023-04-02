@@ -34,6 +34,8 @@ public class Moneda extends Actor {
         if (getX() < -64)
             remove();
     }
+
+
     @Override
     public void draw(Batch batch, float parentAlpha) {
         super.draw(batch, parentAlpha);
@@ -43,12 +45,7 @@ public class Moneda extends Actor {
     public Rectangle getBounds() {
         return bounds;
     }
-    public boolean isUpsideDown() {
-        return upsideDown;
-    }
-    public void setUpsideDown(boolean upsideDown) {
-        this.upsideDown = upsideDown;
-    }
+
     public void setManager(AssetManager manager) {
         this.manager = manager;
     }

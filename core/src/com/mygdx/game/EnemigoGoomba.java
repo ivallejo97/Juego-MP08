@@ -65,12 +65,6 @@ public class EnemigoGoomba extends Actor {
     public Rectangle getBounds() {
         return bounds;
     }
-    public boolean isUpsideDown() {
-        return upsideDown;
-    }
-    public void setUpsideDown(boolean upsideDown) {
-        this.upsideDown = upsideDown;
-    }
     public void setManager(AssetManager manager) {
         this.manager = manager;
     }

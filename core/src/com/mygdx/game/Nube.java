@@ -42,9 +42,6 @@ public class Nube extends Actor {
     public Rectangle getBounds() {
         return bounds;
     }
-    public boolean isUpsideDown() {
-        return upsideDown;
-    }
     public void setUpsideDown(boolean upsideDown) {
         this.upsideDown = upsideDown;
     }

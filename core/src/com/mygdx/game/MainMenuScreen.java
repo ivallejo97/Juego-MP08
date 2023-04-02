@@ -3,6 +3,7 @@ package com.mygdx.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -39,7 +40,7 @@ public class MainMenuScreen implements Screen {
         botonJugarSprite = new Sprite(botonJugarTexture);
         botonJugar = new Button(new SpriteDrawable(botonJugarSprite));
 
-        botonJugar.setPosition(280,100);
+        botonJugar.setPosition(290,120);
         botonJugar.setSize(250,60);
 
         botonJugar.addListener(new ClickListener() {
@@ -48,6 +49,7 @@ public class MainMenuScreen implements Screen {
                 // Actualiza la posición del actor hacia la izquierda
                 game.setScreen(new GameScreen(game));
                 dispose();
+                game.manager.get("musica_fondo.mp3", Sound.class).play();
             }
         });
 

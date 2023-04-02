@@ -19,6 +19,7 @@ public class WinsScreen implements Screen {
     final Bird game;
     OrthographicCamera camera;
     Stage stage;
+    GameScreen gameScreen;
 
 
     private Texture botonMenuPrincipalTexture;
@@ -34,7 +35,7 @@ public class WinsScreen implements Screen {
         stage.getViewport().setCamera(camera);
 
 
-        botonMenuPrincipalTexture = new Texture(Gdx.files.internal("boton-volver.png"));
+        botonMenuPrincipalTexture = new Texture(Gdx.files.internal("boton_volver.png"));
         botonMenuPrincipalSprite = new Sprite(botonMenuPrincipalTexture);
         botonMenuPrincipal = new Button(new SpriteDrawable(botonMenuPrincipalSprite));
 
@@ -70,6 +71,8 @@ public class WinsScreen implements Screen {
         game.bigFont.draw(game.batch, "VICTORIA ", 250, 450);
         game.smallFont.draw(game.batch, "Final Score: " + game.lastScore, 40, 80);
         game.smallFont.draw(game.batch, "Top Score: " + game.topScore, 40, 50);
+        game.smallFont.draw(game.batch, "Monedas : " + game.monedasCogidas +"/15", 40, 110);
+        game.smallFont.draw(game.batch, "Goombas : " + game.numGoombasMuertos + "/" + game.numGoombas, 40, 140);
         game.batch.end();
 
         stage.act(delta);

@@ -2,10 +2,12 @@ package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -17,6 +19,9 @@ public class Player extends Actor {
     float speedy, gravity;
     GameScreen gameScreen;
     boolean colisionando;
+    float time;
+
+
 
 
     Player()
@@ -35,9 +40,12 @@ public class Player extends Actor {
         this.gameScreen = gameScreen;
     }
 
+
     @Override
     public void act(float delta)
     {
+        time += delta;
+        if (time >= 1) time = 0;
         //Actualitza la posició del jugador amb la velocitat vertical
         moveBy(0, speedy*delta);
         //Actualitza la velocitat vertical amb la gravetat
@@ -48,16 +56,19 @@ public class Player extends Actor {
             speedy = 0;
         }
 
-        //if(getY() < 58) setY(58);
-
-
         bounds.set(getX(), getY(), getWidth(), getHeight());
 
     }
     @Override
     public void draw(Batch batch, float parentAlpha) {
         super.draw(batch, parentAlpha);
-        batch.draw(manager.get("nacho.png", Texture.class), getX() - gameScreen.scroll, getY());
+
+         if(time < 0.5f){
+                batch.draw(manager.get("mario2.png", Texture.class), getX() - gameScreen.scroll, getY());
+         } else {
+                batch.draw(manager.get("mario3.png", Texture.class), getX() - gameScreen.scroll, getY());
+         }
+
 
     }
     public Rectangle getBounds() {
@@ -69,8 +80,9 @@ public class Player extends Actor {
     void impulso()
     {
         if( colisionando == true){
-            speedy = 500f;
+            speedy = 520f;
             colisionando = false;
+            manager.get("salto.mp3", Sound.class).play();
         }
     }
 
